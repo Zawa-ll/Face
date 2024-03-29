@@ -227,3 +227,63 @@ int pixels()
 
     return 0;
 }
+
+int read_video()
+{
+    cv::nameWindow("video", cv::WINDOW_AUTOSIZE); // Window for displaying video bits
+
+    cv::VideoCapture cap;
+
+    if (!cap.open("data/test.avi"))
+    {
+        cerr << "Cannot Open Video File" << endl;
+        return -1;
+    }
+
+    cv::Point pt1(100, 100), pt2(300, 300); // st and ed for the string to be added
+
+    int max_buffer; // Maximum Buffer Size
+
+    cv::Mat rawImage;
+
+    // Output File Streams For Storing Data in b,g,r channels, respectively
+    ofstream b, g, r;
+    b.open("blines.csv");
+    g.open("glines.csv");
+    r.open("rlines.csv");
+
+    for (;;)
+    {
+        cap >> rawImage;
+        if (!rawImage.data)
+            break;
+
+        cv::LineIterator it(rawImage, pt1, pt2, 8); // Iterator for iterating through each pixel on the string
+
+        for (int j = 0; j < it.count; ++j, ++it)
+        {
+            b << (int)(*it)[0] << ",";
+            g << (int)(*it)[1] << ",";
+            r << (int)(*it)[2] << ",";
+
+            (*it)[2] = 255; // Red channel value set to 255
+        }
+
+        cv::imshow("video", rawImage);
+
+        int c = cv::waitKey(1000);
+
+        b << "\n";
+        g << "\n";
+        r << "\n";
+    }
+
+    b << endl;
+    g << endl;
+    r << endl;
+    b.close();
+    g.close();
+    r.close();
+
+    cout << "\nData has been store in file: blines.csv, glines.csv, and rlines.csv\n"
+}
