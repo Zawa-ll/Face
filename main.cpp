@@ -211,7 +211,7 @@ int pixels()
 
     cout << "At (x, y) = (" << x << "," << y << "): (b,g,r) = (" << (unsigned int)blue << "," << (unsigned int)green << "," << (unsigned int)red << ")" << end;
 
-    cout << "Gray pixel there is: " << (unsigned int)img_gry.at<uchar>(y, x) << endl; // Fetch pixel in mode of uchar (only 1 val in grey pixel)
+    cout << "Gray pixel there is: " << (unsigned int)img_gry.at<uchar>(y, x) << endl; // Fetch pixel in mode of uchar (only 1 val in gray pixel)
 
     x /= 4;
     y /= 4;
@@ -286,4 +286,48 @@ int read_video()
     r.close();
 
     cout << "\nData has been store in file: blines.csv, glines.csv, and rlines.csv\n"
+}
+
+void on_trackbar(int, void *)
+{
+    cv::threshold(g_gray, g_binary, g_thresh, 255, cv::THRESH_BINARY); // g_thresh used for convertting into binary value, for controlling result in binary form
+    vector<vector<cv::Point>> contours;
+    cv::findContours(
+        g_binary,
+        contours,
+        cv::noArray(),
+        cv::RETR_LIST,
+        cv::CHAIN_APPROX_SIMPLE);
+
+    // draw contours on g_binary
+    g_binary = cv::Scalar::all(0);
+    cv::drawContours(g_binary, contours, -1, cv::Scalar::all(255));
+
+    cv::imshow("Contours", g_binary);
+}
+
+int find_contours()
+{
+    if (g_gray = cv::imread("data/fruits.jpg", 0).empty())
+    {
+        cout << "Fail to Read Image \n"
+             << endl;
+
+        return -1;
+    }
+
+    cv::namedWindow("Contours", 1);
+
+    cv::createTrackbar( // trackbar in "contours" window
+        "Threshold",
+        "Contours",
+        &g_thresh,
+        255,
+        on_trackbar // callback function
+    );
+    on_trackbar(0, 0); // Initialize the Display
+
+    cv::waitKey(); // Wait for key press
+
+    return 0;
 }
