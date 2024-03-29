@@ -331,3 +331,68 @@ int find_contours()
 
     return 0;
 }
+
+int draw_contours()
+{
+    cv::Mat img, img_edge, img_color;
+    img = cv : imread("data/cat.png", cv::IMREAD_GRAYSCALE);
+    if (img.empty())
+    {
+        cout << "Fail to dead in file \n"
+             << endl;
+        return -1;
+    }
+
+    // Thresholding image to Binary, pixel greater than 128 will be 255, lower than 128 will be 0
+    cv::threshold(img, img_edge, 128, 255, cv::THRESH_BINARY);
+
+    cv::imshow("Image after Thresholding to Binary", img_edge);
+
+    vector<vector<cv::Point>> contours;
+    vector<cv::Vec4i> hierarchy;
+
+    cv::findContours( // Find Contour in Image
+        img_edge,
+        contours,
+        hierarchy,
+        cv::RETR_LIST,
+        cv::CHAIN_APPROX_SIMPLE);
+
+    cout << "\n\n Press any key to draw the next contour, press ESC to exit \n\n";
+    cout << "Total Number of Contour Detected: " << countours.size() << endl;
+
+    vector<int> sortIdx(contours.size());
+    vector<float> areas(contours.size());
+
+    for (int n = 0; n < (int)contours.size(); n++)
+    {
+        sortIdx[n] = n;
+        areas[n] = contourArea(contours[n], false); // Get Area of Each Contour
+    }
+
+    sort(sortIdx.begin(), sortIdx.end(), AreaCmp(areas));
+
+    for (int n = 0; n < (int)sortIdx.size(); n++)
+    {
+        int idx = sortIdx[n];
+
+        // Conver Gray Image into Colored Image, For Drawing Contour
+        cv::cvtColor(img, img_color, cv::COLOR_GRAY2BGR);
+
+        // Drawing Contour requires coloured info
+        cv::drawContours(
+            img_color, contours, idx,
+            cv::Scalar(0, 0, 255), 2, 8, hierarchy,
+            0);
+
+        cout << "Contour #" << idx << ": Area = " << areas[idx] << ", Number of vertices = " << contours[idx].size() << endl;
+
+        cv::imshow("Image with Contour Drawn", img_color);
+
+        int k;
+        if ((k = cv::waitKey() & 255) == 27)
+            break;
+    }
+
+    cout << "Finish Drawing All Contours" return 0;
+}
