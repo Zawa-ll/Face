@@ -396,3 +396,149 @@ int draw_contours()
 
     cout << "Finish Drawing All Contours" return 0;
 }
+
+int draw_components()
+{
+    cv::Mat img, img_edge, labels, centroids, img_color, stats;
+
+    img = cv::imread("data/cat.png", cv::IMREAD_GRAYSCALE);
+    cv::imshow("raw", img);
+
+    cv::threshold(img, img_edge, 128, 255, cv::THRESH_BINARY);
+
+    cv::imshow("Image After Thresholding to Binary", img_edge);
+
+    int i, nccomps = cv::connectedComponentsWithStats( // Finding Connected Component
+               img_edge,
+               labels,
+               stats,
+               centroids);
+
+    cout << "Total Number of Connected Component is: " << nccomps << endl;
+
+    // Color Vector distribute different colors for each component
+    vector<cv::Vec3b> colors(nccomps + 1);
+
+    colors[0] = cv::Ve3b(0, 0, 0); // (0, 0, 0) is black color
+
+    // Creating an Color Component same size as IMG, in black color
+    img_color = cv::Mat::zeros(img.size(), CV_8UC3);
+
+    // Iterate through each pixel of IMG and
+    // Assign color of accompanying Connect Component to img_color
+    for (int y = 0; y < img_color.rows; y++)
+    {
+        for (int x = 0; x < img_color.cols; x++)
+        {
+            int label = labels.at<int>(y, x);
+            CV_Assert(0 <= label && label <= nccomps);
+            img_color.at<cv::Vec3b>(y, x) = colors[label];
+        }
+    }
+
+    cv::imshow("Image with Tag", img_color);
+
+    cv::waitKey();
+
+    return 0;
+}
+
+// Measuring the shape difference between two contours by shape context distance
+int shape_distance()
+{
+    Ptr<ShapeContextDistanceExtratctor> mysc = createShapeContextDist
+
+        Mat img1 = imread("shape_sample/3.png", IMREAD_GRAYSCALE);
+    Mat img2 = imread("shape_sample/4.png", IMREAD_GRAYSCALE);
+
+    vector<Point> c1 = sampleContour(img1);
+    vector<Point> c2 = sampleContour(img2);
+
+    float dis = mysc->computeDistance(c1, c2);
+
+    cout << "Difference(Distance) between the two image is " << dis << endl;
+
+    cv::imshow("SHAPE #1", img1);
+    cv::imshow("SHAPE #2", img2);
+
+    cv::waitKey();
+}
+
+int fit_line()
+{
+    cv::Mat img(500, 500, CV_8UC3);
+
+    // Random number generator with seed set to -1
+    cv::RNG rng(-1);
+
+    // Loop randomly generated points for straight line fitting
+    for (;;)
+    {
+        chat key;
+
+        int i;
+        int count = rng.uniform(0, 100) + 3;
+        int outliers = count / 5; // For Calculate number of outliers, should be 1/5 of point's total number
+
+        float a = (float)rng.uniform(0., 200.);
+        float b = (float)rng.uniform(0., 40.);
+        float angle = (float)rng.uniform(0., CV_PI);
+        float cos_a = cos(angle, sin_a = sin(angle));
+
+        cv::Point pt1, pt2;
+        vector<cv::Point> poins(count); // Points being generated
+        cv::Vec4f line;                 // Attribute for the generated line fitting
+        float d, t;
+
+        b = min(a * 0.3f, b);
+    }
+
+    // Geerating points close to the line
+    for (int i = 0; i < count - outliers; i++)
+    {
+        float x = (float)rng.uniform(-1. 1.) * a;
+        float y = (float)rng.uniform(-1. 1.) * b;
+
+        // Move the generated coordinate points to the center of the image through rotational translation
+        points[i].x = cvRound(x * cos_a - y * sin_a + img.cols / 2);
+        points[i].x = cvRound(x * sin_a - y * cos_a + img.cols / 2);
+    }
+
+    for (; i < count; i++)
+    {
+        points[i].x = rng.uniform(0, img.cols);
+        points[i].y = rng.uniform(0, img.rows);
+    }
+
+    cv::fitline(points, line, cv::DIST_L1, 1, 0.001, 0.001);
+
+    // Drawing all points
+    img = cv::Scalar::all(0);
+    for (int i = 0; i < count; i++)
+    {
+        cv::circle(img, points[i], 2,
+                   i < count - outliers ? cv::Scalar(0, 0, 255)
+                                        : cv::Scalar(0, 255, 255),
+                   cv::FILLED, CV_AA, 0);
+
+        d = sqrt((double)line[0] * line[0] + (double)Line[1] * line[1]);
+        line[0] /= d;
+        line[1] /= d;
+
+        t = (float)(img.cols + img.rows);
+
+        pt1.x = cvRound(line[2] - line[0] * t);
+        pt1.y = cvRound(line[3] - line[1] * t);
+        pt2.y = cvRound(line[2] + line[0] * t);
+        pt2.y = cvRound(line[3] + line[1] * t);
+
+        cv::line(img, pt1, pt2, cv::Scalar(0, 255, 0), 3, CV_AA, 0);
+        cv::imshow("Fit Line", img);
+        key = (char)cv::waitKey(0);
+
+        if (key == 27 || key == 'q' || key == 'Q')
+            break;
+    }
+
+    return 0;
+}
